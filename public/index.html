@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title> Simple JS Eval</title>
+  <script src='script.js'> </script>
+  <script>
+
+var theUser = "test";
+var allSubs = null;
+var currentClick;
+var newSub;
+var aFeed;
+var link = [];
+
+var startUp = function(){
+  loadMySubs();
+}
+
+var addFeed = function(){
+	newSub = prompt("Please enter a sub you want to add: ");
+	var url = "./addOrEditSub?id=" + allSubs.length + "&link=" + newSub + "&date" + 0 + "&user=" + theUser; 
+	
+	loadURL(url, function(data){});
+	
+	location.reload();
+}
+
+var loadMySubs = function()
+{
+  var url = "./listSubs?user=" + theUser;
+ 
+  loadURL(url, function(data){
+    var mySubs = JSON.parse(data);
+    allSubs = mySubs;
+    if(mySubs.length == 0){
+      document.getElementById("myFeedList").innerHTML = "No subsciptions" 
+    }
+    else{
+      var markUp = "";
+      for (var i = 0; i < mySubs.length; i++){
+        aFeed = mySubs[i];
+		link[i] = aFeed.link;
+        markUp += "<a href = javascript:showPosts(" + i + ") class='listItem'>" + (i+1) + ". " + aFeed.link +" </a>" + "<br/>";
+		}
+      document.getElementById("myFeedList").innerHTML = markUp;
+    }
+  });
+
+}
+
+var showPosts = function(value)
+{
+	var titles = [];
+	var url = "./getAllPosts?link=" + link[value];
+	
+	loadURL(url, function(data){
+		var posts = JSON.parse(data);
+		aFeed = posts;
+		for(var i=0; i<posts.feed.entry.length; i++){
+			titles.push("<a href = javascript:showDescription(" + i + ")>" + JSON.stringify(posts.feed.entry[i].title.label) + "</a>" + "<br/>");
+			//titles.join("");
+		}	
+		document.getElementById("feedDetails").innerHTML = "";
+		document.getElementById("currFeedList").innerHTML = titles;
+	});
+
+}
+
+var showDescription = function(value)
+{
+	var temp = JSON.stringify(aFeed.feed.entry[value].summary.label);
+	
+	if(temp != null)
+		titles = JSON.stringify(aFeed.feed.entry[value].summary.label);
+	else
+		titles = "Cannot recieve description."	
+		
+		
+		document.getElementById("feedDetails").innerHTML = titles;
+
+}	
+  </script>
+  <style>
+  p{
+      text-align: center;
+  }
+  body{
+    margin: 0px;
+  }
+  
+  a:link {
+      text-decoration: none;
+  }
+
+  a:visited {
+      text-decoration: none;
+  }
+
+  a:hover {
+      text-decoration: underline;
+  }
+
+  a:active {
+      text-decoration: underline;
+  }
+  
+  #myFeedWrapper, #currFeedWrapper{
+    display: inline-block;
+    width: 30%;
+    vertical-align: top;
+    background: #ddd;
+    min-height: 100%;
+	white-space: nowrap;  
+	overflow: hidden;
+	text-overflow: ellipsis; 
+	border: 3px solid DarkGray;
+	font-family: Arial, Helvetica, sans-serif;
+	color: #191970;
+  }
+  #selFeedWrapper{
+    display: inline-block;
+    width: 38%;
+    vertical-align: top;
+    min-height: 100%;
+	color: DimGray;
+  }
+  </style>
+</head>
+
+<body onload='startUp()'> 
+  <div id='myFeedWrapper'>
+    <h1 style="text-shadow: -1px 0 white, 0 1px white, 1px 0 white, 0 -1px white;"> My Feeds </h1>
+    <a href='javascript:addFeed()' style="color: #191970; border: 3px solid white"> Add New </a>
+    <div id='myFeedList'> </div>
+  </div>
+  <div id='currFeedWrapper'>
+    <h1> </h1>
+    <div id='currFeedList' style="text-decoration:none;"></div>
+ </div>
+  <div id='selFeedWrapper'> 
+    <h1> </h1>
+    <div id='feedDetails'> </div>
+  </div>
+</body>
+</html>
